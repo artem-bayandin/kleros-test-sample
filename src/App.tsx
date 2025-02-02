@@ -1,5 +1,6 @@
 import './App.css';
 import { useForm } from 'react-hook-form';
+import { ConnectWallet } from './components/ConnectWallet';
 
 const { log } = console
 
@@ -39,7 +40,7 @@ function App() {
 	return (
 		<>
 			<div className='section connect'>
-				{/* <ConnectButton /> */}
+				<ConnectWallet />
 			</div>
 
 			<hr />
