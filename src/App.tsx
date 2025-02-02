@@ -1,9 +1,7 @@
-import React from 'react';
 import './App.css';
 import { useForm } from 'react-hook-form';
+
 const { log } = console
-
-
 
 function App() {
 
@@ -66,8 +64,8 @@ function App() {
 			<div className='section solve'>
 				<h3>user 1 : solve</h3>
 				<form onSubmit={handleSubmitSolve(onSubmitSolve)}>
-			        <input type='text' {...registerSolve('game')} placeholder='game address' required />
-          			<select {...registerSolve('choice')} value="1">
+					<input type='text' {...registerSolve('game')} placeholder='game address' required />
+					<select {...registerSolve('choice')} value="1">
 						<option value="1">rock</option>
 						<option value="2">paper</option>
 						<option value="3">scissors</option>
@@ -92,6 +90,14 @@ function App() {
 			<div className='section reply'>
 				<h3>user 2 : reply</h3>
 				<form onSubmit={handleSubmitReply(onSubmitReply)}>
+					<input type='text' {...registerReply('game')} placeholder='game address' required />
+					<select {...registerReply('choice')} value="1">
+						<option value="1">rock</option>
+						<option value="2">paper</option>
+						<option value="3">scissors</option>
+						<option value="4">spock</option>
+						<option value="5">lizard</option>
+					</select>
 					<input type='submit' value='go' />
 				</form>
 			</div>
