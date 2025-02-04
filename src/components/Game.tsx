@@ -1,14 +1,20 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { firstPlayerTimeput, getLastAction, getStake, getTimeout, getUser1, getUser1Hash, getUser2, getUser2Move, reply, secondPlayerTimeout, solve, startGame } from '../services/rps.service'
+import { firstPlayerTimeout, getLastAction, getStake, getTimeout, getUser1, getUser1Hash, getUser2, getUser2Move, reply, secondPlayerTimeout, solve, startGame } from '../services/rps.service'
 
 const { log } = console
 
 function Game() {
     const [ GAME, setGame ] = useState('')
-
+    const initialEmptyStringArray: string[] = []
+    const [ startGameErrors, setStartGameErrors ] = useState(initialEmptyStringArray)
+    const [ solveErrors, setSolveErrors ] = useState(initialEmptyStringArray)
+    const [ secondPlayerTimeoutErrors, setSecondPlayerTimeoutErrors ] = useState(initialEmptyStringArray)
+    const [ replyErrors, setReplyErrors ] = useState(initialEmptyStringArray)
+    const [ firstPlayerTimeoutErrors, setFirstPlayerTimeoutErrors ] = useState(initialEmptyStringArray)
+    
     // USER 1
-
+    
     const { register: registerStart, handleSubmit: handleSubmitStart } = useForm({
         defaultValues: {
             opponent: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
@@ -18,43 +24,87 @@ function Game() {
         }
     })
     const onSubmitStart = async (e: any) => {
+        setStartGameErrors([])
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitStart' }))
         setGame('')
         const { opponent, bet, choice, salt } = e
-        const { contract} = await startGame(opponent, bet, choice, salt)
+        const result = await startGame(opponent, bet, choice, salt)
+        if (result.errors) {
+            // show errors
+            setStartGameErrors(result.errors)
+            console.log(`FAILED startGame`, result.errors)
+            return;
+        }
+        const contract = result.data?.contract || ''
         setGame(contract)
         console.log(`SUCCESS startGame ${contract}`)
+        setStartGameErrors(['success'])
     }
 
     const { register: registerSolve, handleSubmit: handleSubmitSolve, setValue: setValueSubmitSolve } = useForm()
     const onSubmitSolve = async (e: any) => {
+        setSolveErrors([])
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitSolve' }))
         const { game, choice, salt } = e
-        await solve(game, choice, salt)
+        const result = await solve(game, choice, salt)
+        if (result.errors) {
+            // show errors
+            setSolveErrors(result.errors)
+            console.log(`FAILED solve`, result.errors)
+            return;
+        }
         console.log(`SUCCESS solve`)
+        setSolveErrors(['success'])
     }
 
     const { register: registerTimeout2, handleSubmit: handleSubmitTimeout2, setValue: setValueSubmitTimeout2 } = useForm()
     const onSubmitTimeout2 = async (e: any) => {
+        setSecondPlayerTimeoutErrors([])
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitTimeout2' }))
         const { game } = e
-        await secondPlayerTimeout(game)
+        const result = await secondPlayerTimeout(game)
+        if (result.errors) {
+            // show errors
+            setSecondPlayerTimeoutErrors(result.errors)
+            console.log(`FAILED secondPlayerTimeout`, result.errors)
+            return;
+        }
+        console.log(`SUCCESS secondPlayerTimeout`)
+        setSecondPlayerTimeoutErrors(['success'])
     }
 
     // USER 2
 
     const { register: registerReply, handleSubmit: handleSubmitReply, setValue: setValueSubmitReply } = useForm()
     const onSubmitReply = async (e: any) => {
+        setReplyErrors([])
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitReply' }))
         const { game, choice } = e
-        await reply(game, choice)
+        const result = await reply(game, choice)
+        if (result.errors) {
+            // show errors
+            setReplyErrors(result.errors)
+            console.log(`FAILED reply`, result.errors)
+            return;
+        }
+        console.log(`SUCCESS reply`)
+        setReplyErrors(['success'])
     }
 
     const { register: registerTimeout1, handleSubmit: handleSubmitTimeout1, setValue: setValueSubmitTimeout1 } = useForm()
     const onSubmitTimeout1 = async (e: any) => {
+        setFirstPlayerTimeoutErrors([])
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitTimeout1' }))
         const { game } = e
-        await firstPlayerTimeput(game)
+        const result = await firstPlayerTimeout(game)
+        if (result.errors) {
+            // show errors
+            setFirstPlayerTimeoutErrors(result.errors)
+            console.log(`FAILED firstPlayerTimeout`, result.errors)
+            return;
+        }
+        console.log(`SUCCESS firstPlayerTimeout`)
+        setFirstPlayerTimeoutErrors(['success'])
     }
 
     // end user
@@ -114,6 +164,7 @@ function Game() {
                     <input type='submit' value='go' />
                 </form>
                 { GAME && <div>game created: {GAME}</div> }
+                {startGameErrors.map((item, index) => { return <div key={index}>{item}</div>})}
             </div>
 
             <div className='section solve'>
@@ -130,6 +181,7 @@ function Game() {
                     <input type='number' {...registerSolve('salt')} placeholder='salt' min={0} required />
                     <input type='submit' value='go' />
                 </form>
+                {solveErrors.map((item, index) => { return <div key={index}>{item}</div>})}
             </div>
 
             <div className='section timeout2'>
@@ -138,6 +190,7 @@ function Game() {
                     <input type='text' {...registerTimeout2('game')} placeholder='game address' required />
                     <input type='submit' value='go' />
                 </form>
+                {secondPlayerTimeoutErrors.map((item, index) => { return <div key={index}>{item}</div>})}
             </div>
 
             <hr />
@@ -155,6 +208,7 @@ function Game() {
                     </select>
                     <input type='submit' value='go' />
                 </form>
+                {replyErrors.map((item, index) => { return <div key={index}>{item}</div>})}
             </div>
             <div className='section timeout1'>
                 <h3>user 2 : timeout1</h3>
@@ -162,6 +216,7 @@ function Game() {
                     <input type='text' {...registerTimeout1('game')} placeholder='game address' required />
                     <input type='submit' value='go' />
                 </form>
+                {firstPlayerTimeoutErrors.map((item, index) => { return <div key={index}>{item}</div>})}
             </div>
 
             <hr />
