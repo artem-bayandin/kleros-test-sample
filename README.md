@@ -10,11 +10,12 @@ Due to the fact, that the RPS contract is being deployed for every game, there i
 2. `cd kleros-test-sample`
 3. `yarn` (or `npm install`, I will continue with `yarn` commands)
 4. `yarn hardhat compile --force`
-5. now you need 2 terminals to run a) hardhat node; b) project
-6. terminal 1: `yarn hardhat node`
-7. this will also give you a list of pre-configured users. be precise when adding them to Metamask: the first transaction should have `0` as `nonce` (when you re-start node several times, `nonce` will get zeroed, but MM remembers the last used nonce). feel free to add 2 addresses to your wallet.
-7. terminal 2: `yarn start`
-8. have fun
+5. now you should add a network to your Metamask: `RPC URL` should be `http://127.0.0.1:8545/`, `chain id` should be `127002`. `name` and `symbol` - any as you wish
+6. now you need 2 terminals to run a) hardhat node; b) project
+7. terminal 1: `yarn hardhat node` (in `kleros-test-sample` folder)
+8. this will also give you a list of pre-configured users. be precise when adding them to Metamask: the first transaction should have `0` as `nonce` (when you re-start node several times, `nonce` will get zeroed, but MM remembers the last used nonce). feel free to add 2 addresses to your wallet.
+9. terminal 2: `yarn start` (in `kleros-test-sample` folder)
+10. have fun
 
 ## Game logic (for me as The Dev)
 
