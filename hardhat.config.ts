@@ -24,7 +24,12 @@ const config: HardhatUserConfig = {
       throwOnCallFailures: true,
       loggingEnabled: true
     }
-  }
+  },
+  paths: {
+    sources: './contracts',
+    tests: './test/hardhat',
+    artifacts: './src/hardhat-artifacts'
+  },
 }
 
 export default config

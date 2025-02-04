@@ -1,54 +1,98 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { firstPlayerTimeput, getLastAction, getStake, getTimeout, getUser1, getUser1Hash, getUser2, getUser2Move, reply, secondPlayerTimeout, solve, startGame } from '../services/rps.service'
 
 const { log } = console
 
 function Game() {
+    const [ GAME, setGame ] = useState('')
 
     // USER 1
 
-    const { register: registerStart, handleSubmit: handleSubmitStart, setValue: setValueSubmitStart } = useForm()
-    const onSubmitStart = (e: any) => {
+    const { register: registerStart, handleSubmit: handleSubmitStart } = useForm({
+        defaultValues: {
+            opponent: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+            , bet: 1000000000 + Date.now()
+            , choice: 1
+            , salt: 16
+        }
+    })
+    const onSubmitStart = async (e: any) => {
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitStart' }))
+        setGame('')
+        const { opponent, bet, choice, salt } = e
+        const { contract} = await startGame(opponent, bet, choice, salt)
+        setGame(contract)
+        console.log(`SUCCESS startGame ${contract}`)
     }
 
     const { register: registerSolve, handleSubmit: handleSubmitSolve, setValue: setValueSubmitSolve } = useForm()
-    const onSubmitSolve = (e: any) => {
+    const onSubmitSolve = async (e: any) => {
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitSolve' }))
+        const { game, choice, salt } = e
+        await solve(game, choice, salt)
+        console.log(`SUCCESS solve`)
     }
 
     const { register: registerTimeout2, handleSubmit: handleSubmitTimeout2, setValue: setValueSubmitTimeout2 } = useForm()
-    const onSubmitTimeout2 = (e: any) => {
+    const onSubmitTimeout2 = async (e: any) => {
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitTimeout2' }))
+        const { game } = e
+        await secondPlayerTimeout(game)
     }
 
     // USER 2
 
     const { register: registerReply, handleSubmit: handleSubmitReply, setValue: setValueSubmitReply } = useForm()
-    const onSubmitReply = (e: any) => {
+    const onSubmitReply = async (e: any) => {
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitReply' }))
+        const { game, choice } = e
+        await reply(game, choice)
     }
 
     const { register: registerTimeout1, handleSubmit: handleSubmitTimeout1, setValue: setValueSubmitTimeout1 } = useForm()
-    const onSubmitTimeout1 = (e: any) => {
+    const onSubmitTimeout1 = async (e: any) => {
         log('[GAME]', JSON.stringify({ ...e, name: 'onSubmitTimeout1' }))
+        const { game } = e
+        await firstPlayerTimeput(game)
     }
 
     // end user
 
     // READ
 
-    const [ user1, setUser1 ] = useState()
-    const [ user2, setUser2 ] = useState()
-    const [ user1Hash, setUser1Hash ] = useState()
-    const [ user2Move, setUser2Move ] = useState()
-    const [ stake, setStake ] = useState()
-    const [ timeout, setTimeout ] = useState()
-    const [ lastAction, setLastAction ] = useState()
+    const [ user1, setUser1 ] = useState('')
+    const [ user2, setUser2 ] = useState('')
+    const [ user1Hash, setUser1Hash ] = useState('')
+    const [ user2Move, setUser2Move ] = useState(0)
+    const [ stake, setStake ] = useState(0)
+    const [ timeout, setTimeout ] = useState(0)
+    const [ lastAction, setLastAction ] = useState(0)
 
     const { register: registerReader, handleSubmit: handleReader } = useForm()
-    const onReader = (e: any) => {
+    const onReader = async (e: any) => {
+        const { game } = e
         log('[GAME]', JSON.stringify({ ...e, name: 'onReader' }))
+        const user1 = await getUser1(game)
+        setUser1(user1)
+
+        const user2 = await getUser2(game)
+        setUser2(user2)
+
+        const user1Hash = await getUser1Hash(game)
+        setUser1Hash(user1Hash)
+
+        const user2Move = await getUser2Move(game)
+        setUser2Move(Number(user2Move))
+
+        const stake = await getStake(game)
+        setStake(Number(stake))
+
+        const timeout = await getTimeout(game)
+        setTimeout(Number(timeout))
+
+        const lastAction = await getLastAction(game)
+        setLastAction(Number(lastAction))
     }
 
     return (
@@ -69,6 +113,7 @@ function Game() {
                     <input type='number' {...registerStart('salt')} placeholder='salt' min={0} required />
                     <input type='submit' value='go' />
                 </form>
+                { GAME && <div>game created: {GAME}</div> }
             </div>
 
             <div className='section solve'>
@@ -125,7 +170,7 @@ function Game() {
                 <div>
                     <h3>reader</h3>
                     <form onSubmit={handleReader(onReader)}>
-                        <input type='text' {...registerTimeout1('game')} placeholder='game address' required />
+                        <input type='text' {...registerReader('game')} placeholder='game address' required />
                         <input type='submit' value='read' />
                     </form>
                 </div>

@@ -48,7 +48,7 @@ function App() {
 	}, [ currentAddress, currentChainId ])
 
 	const onConnectClicked = () => {
-		// green line to just read current address and network, but if you changed address in MM, this will still read previous address
+		// next line to just read current address and network, but if you changed address in MM, this will still read previous address
 		// `requestPermissionsAndConnect` disconnects current account and requests new one
 		// getAccountOrRequestAccount().then((acc) => {
 		requestPermissionsAndConnect().then((acc) => {
