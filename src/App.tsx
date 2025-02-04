@@ -1,114 +1,73 @@
-import './App.css';
-import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import './App.css'
+import Game from './components/Game'
+import { getChainId, getEthProvider, requestPermissionsAndConnect } from './services/network.service';
+import { ChainContext } from './contexts/chainContext';
 
 const { log } = console
 
 function App() {
+	const [ currentChainId, setCurrentChainId ] = useState(0n as BigInt | null)
+	const [ currentAddress, setCurrentAddress ] = useState('')
 
-	// USER 1
+	const provider = getEthProvider() as any
 
-	const { register: registerStart, handleSubmit: handleSubmitStart, setValue: setValueSubmitStart } = useForm()
-	const onSubmitStart = (e: any) => {
-		log(JSON.stringify({ ...e, name: 'onSubmitStart' }))
+	const connectListener = ({ chainId }: { chainId: string }) => {
+		log('[APP] on connect', chainId)
+		setCurrentChainId(BigInt(chainId))
 	}
 
-	const { register: registerSolve, handleSubmit: handleSubmitSolve, setValue: setValueSubmitSolve } = useForm()
-	const onSubmitSolve = (e: any) => {
-		log(JSON.stringify({ ...e, name: 'onSubmitSolve' }))
+	const chainChangedListener = (chainId: string) => {
+		log('[APP] on chainChanged', chainId)
+		setCurrentChainId(BigInt(chainId))
 	}
 
-	const { register: registerTimeout2, handleSubmit: handleSubmitTimeout2, setValue: setValueSubmitTimeout2 } = useForm()
-	const onSubmitTimeout2 = (e: any) => {
-		log(JSON.stringify({ ...e, name: 'onSubmitTimeout2' }))
+	const disconnectListener = (reason: string) => {
+		log('[APP] on disconnect', reason)
+		setCurrentChainId(null)
+		setCurrentAddress('')
 	}
 
-	// USER 2
-
-	const { register: registerReply, handleSubmit: handleSubmitReply, setValue: setValueSubmitReply } = useForm()
-	const onSubmitReply = (e: any) => {
-		log(JSON.stringify({ ...e, name: 'onSubmitReply' }))
+	const accountsChangedListener = (accounts: string[]) => {
+		log('[APP] on accountsChanged', accounts)
+		setCurrentAddress(accounts.length ? accounts[0] : '')
 	}
 
-	const { register: registerTimeout1, handleSubmit: handleSubmitTimeout1, setValue: setValueSubmitTimeout1 } = useForm()
-	const onSubmitTimeout1 = (e: any) => {
-		log(JSON.stringify({ ...e, name: 'onSubmitTimeout1' }))
-	}
+	useEffect(() => {
+		provider.on('connect', connectListener)
+		provider.on('disconnect', disconnectListener)
+		provider.on('accountsChanged', accountsChangedListener)
+		provider.on('chainChanged', chainChangedListener)
 
-	// end user
+		return () => {
+			provider.removeListener('connect', connectListener)
+			provider.removeListener('disconnect', disconnectListener)
+			provider.removeListener('accountsChanged', accountsChangedListener)
+			provider.removeListener('chainChanged', chainChangedListener)
+		}
+	}, [ currentAddress, currentChainId ])
+
+	const onConnectClicked = () => {
+		// green line to just read current address and network, but if you changed address in MM, this will still read previous address
+		// `requestPermissionsAndConnect` disconnects current account and requests new one
+		// getAccountOrRequestAccount().then((acc) => {
+		requestPermissionsAndConnect().then((acc) => {
+			setCurrentAddress(acc)
+			getChainId().then((chid) => {
+				setCurrentChainId(chid)
+			})
+		})
+	}
 
 	return (
-		<>
-			<div className='section connect'>
-				{/* <ConnectButton /> */}
-			</div>
-
+		<ChainContext.Provider value={{ chainId: currentChainId, address: currentAddress }}>
+			<h2>Account section</h2>
+			<div>address: {currentAddress}</div>
+			<div>chain id: {currentChainId?.toString()}</div>
+			<div><button onClick={onConnectClicked}>{ (!currentAddress && !currentChainId) ? 'connect' : 'refresh or re-connect' }</button></div>
 			<hr />
-
-			<div className='section start-game'>
-				<h3>user 1 : start game</h3>
-				<form onSubmit={handleSubmitStart(onSubmitStart)}>
-					<input type='text' {...registerStart('opponent')} placeholder='opponent address' required />
-					<input type='number' {...registerStart('bet')} placeholder='bet' min={1} required />
-					<select {...registerStart('choice')} value="1">
-						<option value="1">rock</option>
-						<option value="2">paper</option>
-						<option value="3">scissors</option>
-						<option value="4">spock</option>
-						<option value="5">lizard</option>
-					</select>
-					<input type='number' {...registerStart('salt')} placeholder='salt' min={0} required />
-					<input type='submit' value='go' />
-				</form>
-			</div>
-
-			<div className='section solve'>
-				<h3>user 1 : solve</h3>
-				<form onSubmit={handleSubmitSolve(onSubmitSolve)}>
-					<input type='text' {...registerSolve('game')} placeholder='game address' required />
-					<select {...registerSolve('choice')} value="1">
-						<option value="1">rock</option>
-						<option value="2">paper</option>
-						<option value="3">scissors</option>
-						<option value="4">spock</option>
-						<option value="5">lizard</option>
-					</select>
-					<input type='number' {...registerSolve('salt')} placeholder='salt' min={0} required />
-					<input type='submit' value='go' />
-				</form>
-			</div>
-
-			<div className='section timeout2'>
-				<h3>user 1 : timeout2</h3>
-				<form onSubmit={handleSubmitTimeout2(onSubmitTimeout2)}>
-					<input type='text' {...registerTimeout2('game')} placeholder='game address' required />
-					<input type='submit' value='go' />
-				</form>
-			</div>
-
-			<hr />
-
-			<div className='section reply'>
-				<h3>user 2 : reply</h3>
-				<form onSubmit={handleSubmitReply(onSubmitReply)}>
-					<input type='text' {...registerReply('game')} placeholder='game address' required />
-					<select {...registerReply('choice')} value="1">
-						<option value="1">rock</option>
-						<option value="2">paper</option>
-						<option value="3">scissors</option>
-						<option value="4">spock</option>
-						<option value="5">lizard</option>
-					</select>
-					<input type='submit' value='go' />
-				</form>
-			</div>
-			<div className='section timeout1'>
-				<h3>user 2 : timeout1</h3>
-				<form onSubmit={handleSubmitTimeout1(onSubmitTimeout1)}>
-					<input type='text' {...registerTimeout1('game')} placeholder='game address' required />
-					<input type='submit' value='go' />
-				</form>
-			</div>
-		</>
+            {!!currentAddress && !!currentChainId && <Game />}
+		</ChainContext.Provider>
 	);
 }
 
