@@ -17,10 +17,10 @@ function Timeout2() {
         if (result.errors) {
             // show errors
             setSecondPlayerTimeoutErrors(result.errors)
-            console.log(`FAILED secondPlayerTimeout`, result.errors)
+            log(`FAILED secondPlayerTimeout`, result.errors)
             return;
         }
-        console.log(`SUCCESS secondPlayerTimeout`)
+        log(`SUCCESS secondPlayerTimeout`)
         setSecondPlayerTimeoutErrors(['success'])
     }
 

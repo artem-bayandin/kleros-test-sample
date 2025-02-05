@@ -17,10 +17,10 @@ function Solve() {
         if (result.errors) {
             // show errors
             setSolveErrors(result.errors)
-            console.log(`FAILED solve`, result.errors)
+            log(`FAILED solve`, result.errors)
             return;
         }
-        console.log(`SUCCESS solve`)
+        log(`SUCCESS solve`)
         setSolveErrors(['success'])
     }
 

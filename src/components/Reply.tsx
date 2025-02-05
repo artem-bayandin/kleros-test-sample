@@ -17,10 +17,10 @@ function Reply() {
         if (result.errors) {
             // show errors
             setReplyErrors(result.errors)
-            console.log(`FAILED reply`, result.errors)
+            log(`FAILED reply`, result.errors)
             return;
         }
-        console.log(`SUCCESS reply`)
+        log(`SUCCESS reply`)
         setReplyErrors(['success'])
     }
 

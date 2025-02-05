@@ -21,12 +21,12 @@ function Start() {
         if (result.errors) {
             // show errors
             setStartGameErrors(result.errors)
-            console.log(`FAILED startGame`, result.errors)
+            log(`FAILED startGame`, result.errors)
             return;
         }
         const contract = result.data?.contract || ''
         setGame(contract)
-        console.log(`SUCCESS startGame ${contract}`)
+        log(`SUCCESS startGame ${contract}`)
         setStartGameErrors(['success'])
     }
 
